@@ -7,12 +7,15 @@ import os
 # Load environment variables
 load_dotenv()
 
+# Get Ollama base URL from environment variable, with a default
+ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+
 async def main():
-    # Initialize the agent using Mac Studio LLM endpoint
+    # Initialize the agent using the local LLM endpoint
     agent = Agent(
         task="Go to Google, search for 'browser-use github', and return the first result.",
         llm=ChatOpenAI(
-            base_url="https://matiass-mac-studio.tail174e9b.ts.net/v1",
+            base_url=ollama_base_url,
             api_key="ollama",  # placeholder - Ollama ignores this
             model="llama4:scout",  # Using Llama4:scout - best for browser automation
             temperature=0.7,
@@ -24,4 +27,4 @@ async def main():
     print("Task Result:", result)
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())
