@@ -10,17 +10,17 @@ A comprehensive browser automation solution that uses AI for visual navigation, 
 - Quick setup and deployment
 - Pay-per-use model
 
-### **2. Mac Studio Local LLM Version** 🏠  
-- Uses local Ollama with llama4:scout/maverick models
-- 100% local processing via Tailscale
-- Complete privacy and unlimited usage
-- Zero API costs after setup
+### **2. Local LLM Version (Windows, Mac, Linux)** 🏠
+- Uses local Ollama with models like `llama4:scout`
+- 100% local processing for complete privacy
+- Unlimited usage with zero API costs after setup
+- Works on Windows, macOS, and Linux.
 
 ## 🛡️ **Why Visual AI Navigation?**
 
 Traditional browser automation gets **instantly blocked** by modern anti-bot protection:
 - ❌ Cloudflare detection
-- ❌ reCAPTCHA challenges  
+- ❌ reCAPTCHA challenges
 - ❌ Bot fingerprinting
 - ❌ Behavioral analysis
 
@@ -47,16 +47,24 @@ playwright install
 python examples/google_search.py
 ```
 
-### **Option B: Mac Studio (Local)**
+### **Option B: Local LLM (Windows, Mac, Linux)**
+For detailed instructions, see:
+- **[Windows Setup Guide](README_windows.md)**
+- **[Mac Studio Setup Guide](README_macstudio.md)** (Similar steps for other Mac/Linux systems)
+
 ```bash
-# 1. Install dependencies  
-pip install -r requirements-macstudio.txt
+# 1. Install dependencies
+pip install -r requirements-local.txt
 
-# 2. Test Mac Studio connection
-python llm_speed_test.py
+# 2. Set up environment variables (see guides)
+# On Windows, create a .env file with:
+# OLLAMA_BASE_URL=http://localhost:11434/v1
 
-# 3. Run production agent
-python production_visual_agent.py
+# 3. Install browsers
+playwright install
+
+# 4. Run an example
+python examples/google_search_local.py
 ```
 
 ## 📁 **Project Structure**
@@ -70,19 +78,20 @@ python production_visual_agent.py
 │   ├── requirements.txt               # Gemini dependencies
 │   └── .env.example                   # Environment template
 │
-├── 🏠 MAC STUDIO VERSION  
+├── 🏠 LOCAL LLM VERSION
 │   ├── examples/
-│   │   ├── google_search_macstudio.py      # Local LLM search
-│   │   ├── superbowl_search_macstudio.py   # Sports data (local)
-│   │   ├── model_comparison_test.py        # Model performance
-│   │   └── multi_model_workflow.py         # Strategic model use
-│   ├── production_visual_agent.py     # Production-ready agent
+│   │   ├── google_search_local.py      # Local LLM search
+│   │   ├── superbowl_search_local.py   # Sports data (local)
+│   │   ├── model_comparison_test.py    # Model performance
+│   │   └── multi_model_workflow.py     # Strategic model use
+│   ├── production_visual_agent_local.py # Production-ready agent
 │   ├── anti_bot_examples.py           # Anti-bot scenarios
 │   ├── llm_speed_test.py              # Performance testing
-│   ├── requirements-macstudio.txt     # Local LLM dependencies
+│   ├── requirements-local.txt         # Local LLM dependencies
 │   └── model_selection_guide.md       # Model recommendations
 │
 ├── 📚 DOCUMENTATION
+│   ├── README_windows.md              # Windows setup guide
 │   ├── README_macstudio.md            # Mac Studio setup guide
 │   ├── README_FINAL.md                # Complete documentation
 │   └── docs/                          # Additional documentation
@@ -103,7 +112,7 @@ await visual_search_task(
 )
 ```
 
-### **Financial Data Extraction**  
+### **Financial Data Extraction**
 ```python
 # Navigate protected financial sites
 await visual_search_task(
@@ -123,9 +132,9 @@ await visual_search_task(
 
 ## ⚡ **Performance Comparison**
 
-| Feature | Google Gemini | Mac Studio |
+| Feature | Google Gemini | Local LLM |
 |---------|---------------|------------|
-| **Setup Time** | 5 minutes | 30 minutes |
+| **Setup Time** | 5 minutes | 15-30 minutes |
 | **Response Speed** | 2-4 seconds | 2-3 seconds |
 | **Privacy** | Cloud processing | 100% local |
 | **Cost** | Pay per use | Free after setup |
@@ -134,12 +143,12 @@ await visual_search_task(
 
 ## 🛠️ **Advanced Features**
 
-### **Multi-Model Strategy (Mac Studio)**
+### **Multi-Model Strategy (Local LLM)**
 ```python
 # Use llama4:scout for navigation
 scout_agent = Agent(task="Navigate to site", llm=scout_llm)
 
-# Use maverick for complex reasoning  
+# Use maverick for complex reasoning
 maverick_agent = Agent(task="Extract complex data", llm=maverick_llm)
 ```
 
@@ -162,7 +171,7 @@ agent = Agent(
 - **Anti-Bot**: Optimized for protected sites
 - **Stealth**: Maximum evasion capabilities
 
-### **Model Selection (Mac Studio)**
+### **Model Selection (Local LLM)**
 - **llama4:scout**: Best for navigation and search
 - **maverick**: Best for complex reasoning and data extraction
 - **Strategic switching**: Use both for optimal results
@@ -175,12 +184,12 @@ agent = Agent(
 3. Gradually increase task complexity
 
 ### **For Advanced Users**
-1. Set up Mac Studio local environment
+1. Set up a local environment (see guides for Windows/Mac)
 2. Experiment with model combinations
 3. Build custom automation workflows
 
 ### **For Production Use**
-1. Use Mac Studio version for privacy and scale
+1. Use the local version for privacy and scale
 2. Implement proper error handling
 3. Set up monitoring and logging
 
@@ -188,7 +197,7 @@ agent = Agent(
 
 We welcome contributions! Please see our contributing guidelines for:
 - Code style and standards
-- Testing requirements  
+- Testing requirements
 - Documentation updates
 - Bug reports and feature requests
 
@@ -206,4 +215,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Perfect for**: Web scraping, automated testing, data extraction, e-commerce monitoring, social media research, and any scenario requiring reliable browser automation that bypasses modern anti-bot protection. 
+**Perfect for**: Web scraping, automated testing, data extraction, e-commerce monitoring, social media research, and any scenario requiring reliable browser automation that bypasses modern anti-bot protection.
