@@ -4,3 +4,6 @@ pydantic>=2.6
 pydantic-settings>=2.2
 redis>=5.0
 python-dotenv>=1.0
+
+# Dev / test
+pytest>=8.0

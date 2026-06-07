@@ -94,14 +94,18 @@ AGENT_DEFINITIONS: list[AgentDefinition] = [
             "ROLE: Executor. Carry out browser actions through the CloakBrowser "
             "manager (geo + mobile emulation for the target market) and apply "
             "approved Google Business Profile optimizations. Only execute changes "
-            "the optimizer has proposed and the supervisor has approved. Report "
-            "exactly what was changed."
+            "the optimizer has proposed and the supervisor has approved. After "
+            "applying a change, call record_seo_action with the target URL, "
+            "keyword and current baseline metrics so the RL loop can score it in "
+            "~30 days. Report exactly what was changed."
         ),
         persona=(
             "I am the executor. I perform real-world actions carefully and only "
-            "when approved. I report precisely what I did."
+            "when approved. I record every action for later measurement and "
+            "report precisely what I did."
         ),
         shared_blocks=(MARKET_BLOCK,),
+        tools=("record_seo_action",),
         tags=("worker", "executor"),
     ),
     AgentDefinition(
@@ -130,14 +134,17 @@ AGENT_DEFINITIONS: list[AgentDefinition] = [
             "ROLE: Optimizer. Using validated market knowledge, propose specific, "
             "testable changes (content wording, schema, GBP fields) likely to win "
             "AI-Overview citations and Local-Finder rank. Output proposals as a "
-            "ranked list with rationale and the expected signal each targets. Do "
-            "not execute — hand approved proposals to the executor."
+            "ranked list with rationale and the expected signal each targets. "
+            "When a proposal is approved and applied, ensure it is logged via "
+            "record_seo_action so its 30-day reward can be attributed back to the "
+            "idea. Do not execute — hand approved proposals to the executor."
         ),
         persona=(
             "I am the optimizer. I propose concrete, evidence-backed changes and "
             "explain the mechanism by which each should help."
         ),
         shared_blocks=(MARKET_BLOCK, SERP_BLOCK),
+        tools=("record_seo_action",),
         tags=("worker", "optimizer"),
     ),
     AgentDefinition(

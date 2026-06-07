@@ -6,12 +6,14 @@ from typing import Any, Callable
 
 from cloak_seo.logging_config import get_logger
 from cloak_seo.tools.dataforseo import dataforseo_pull
+from cloak_seo.tools.record_action import record_seo_action
 
 logger = get_logger(__name__)
 
 # Map of tool-name -> function. The function name is the tool name in Letta.
 TOOL_FUNCTIONS: dict[str, Callable[..., Any]] = {
     "dataforseo_pull": dataforseo_pull,
+    "record_seo_action": record_seo_action,
 }
 
 

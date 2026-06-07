@@ -12,12 +12,12 @@ dashboard) plugs into.
 >
 > | Section | Status |
 > |---|---|
-> | 1. Multi-agent system (Letta) | ✅ This milestone |
+> | 1. Multi-agent system (Letta) | ✅ Done |
 > | 2. Data pipeline (DataForSEO + CloakBrowser) | 🟡 Tool interfaces stubbed, wiring next |
-> | 3. RL / 30-day feedback loop | 🟡 Agent + reward scaffold present, logic next |
-> | 4. Shared memory & messaging | ✅ This milestone |
+> | 3. RL / 30-day feedback loop | ✅ Done (outcome sources stubbed pending creds) |
+> | 4. Shared memory & messaging | ✅ Done |
 > | 5. Next.js dashboard | ⬜ Not started |
-> | 6. QLoRA fine-tuning (MLX) | ⬜ Not started |
+> | 6. QLoRA fine-tuning (MLX) | 🟡 Dataset export done; training script next |
 
 ## Architecture (this milestone)
 
@@ -98,10 +98,45 @@ cloak-seo-intelligence/
     │   ├── definitions.py     # Persona / role / tool config for the 6 agents
     │   └── factory.py         # Idempotent create-or-update of agents
     ├── tools/
-    │   └── dataforseo.py      # Custom Letta tool (interface; pipeline next)
+    │   ├── dataforseo.py      # Custom Letta tool (interface; pipeline next)
+    │   └── record_action.py   # record_seo_action tool (feeds the RL loop)
+    ├── rl/                    # Reinforcement-learning feedback loop
+    │   ├── models.py          # TrackedAction / ActionMetrics / RewardBreakdown
+    │   ├── action_store.py    # Redis-backed store (+ in-memory fallback)
+    │   ├── reward.py          # Weighted reward function
+    │   ├── feedback.py        # Orchestrator: ingest → evaluate → reinforce
+    │   ├── dataset.py         # Export evaluated actions as QLoRA JSONL
+    │   └── sources/           # GSC / GA4 / Bing outcome adapters
     └── orchestration/
         └── bootstrap.py       # Wire blocks + agents together; messaging helpers
 ```
+
+## Reinforcement-learning feedback loop
+
+Actions taken by the agents are logged (via the `record_seo_action` tool, or
+`./run.sh rl-record`) with their baseline metrics. After the evaluation window
+(`CLOAK_RL_WINDOW_DAYS`, default 30) they become eligible for scoring:
+
+```bash
+# Manually record an action (agents do this automatically via the tool)
+./run.sh rl-record --url https://site.com/plumber \
+  --keyword "emergency plumber fort lauderdale" \
+  --description "Added FAQ schema + service-area copy" \
+  --baseline-rank 8 --baseline-clicks 50 --baseline-impressions 800
+
+# Evaluate matured actions: fetch outcomes, compute rewards, write to the
+# rl_rewards shared block, and ask the RL agent to reinforce knowledge.
+./run.sh rl-evaluate            # run daily (e.g. via cron)
+
+# Export evaluated actions as a QLoRA fine-tuning dataset
+./run.sh rl-export rewards.jsonl --min-reward 0.0
+```
+
+The reward is a weighted blend of **ranking improvement**, **AI-Overview
+citation gains**, **traffic delta**, and **impressions delta** (weights are
+configurable in `.env`). Outcome data comes from Google Search Console, GA4 and
+Bing — each is a pluggable adapter that reports *unavailable* (and contributes
+nothing) until its credentials are configured, so rewards are never fabricated.
 
 ## Design notes
 

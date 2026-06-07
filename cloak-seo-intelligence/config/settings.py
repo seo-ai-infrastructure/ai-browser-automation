@@ -51,9 +51,20 @@ class Settings(BaseSettings):
     )
     market_language: str = Field(default="en", alias="CLOAK_MARKET_LANGUAGE")
 
-    # ── External providers (data pipeline / RL — next milestone) ─────────────
+    # ── External providers (data pipeline / RL) ──────────────────────────────
     dataforseo_login: str | None = Field(default=None, alias="DATAFORSEO_LOGIN")
     dataforseo_password: str | None = Field(default=None, alias="DATAFORSEO_PASSWORD")
+    gsc_credentials_json: str | None = Field(default=None, alias="GSC_CREDENTIALS_JSON")
+    ga4_property_id: str | None = Field(default=None, alias="GA4_PROPERTY_ID")
+    bing_api_key: str | None = Field(default=None, alias="BING_WEBMASTER_API_KEY")
+
+    # ── Reinforcement-learning feedback loop ─────────────────────────────────
+    rl_eval_window_days: int = Field(default=30, alias="CLOAK_RL_WINDOW_DAYS")
+    # Reward weights (need not sum to 1; the breakdown is reported per component).
+    rl_weight_ranking: float = Field(default=0.4, alias="CLOAK_RL_W_RANKING")
+    rl_weight_aio: float = Field(default=0.3, alias="CLOAK_RL_W_AIO")
+    rl_weight_traffic: float = Field(default=0.2, alias="CLOAK_RL_W_TRAFFIC")
+    rl_weight_impressions: float = Field(default=0.1, alias="CLOAK_RL_W_IMPRESSIONS")
 
     # ── Logging ──────────────────────────────────────────────────────────────
     log_level: str = Field(default="INFO", alias="CLOAK_LOG_LEVEL")

@@ -109,11 +109,29 @@ Add a new agent by appending an `AgentDefinition` to `AGENT_DEFINITIONS` and
 re-running `./run.sh bootstrap`. Add a new tool by writing a self-contained
 function and registering it in `src/cloak_seo/tools/registry.py`.
 
+## RL feedback loop
+
+The 30-day reinforcement loop is implemented (`src/cloak_seo/rl/`). Actions are
+logged with baseline metrics, then scored after the evaluation window:
+
+```bash
+./run.sh rl-record --url <url> --keyword <kw> --description <what-changed> \
+  --baseline-rank 8 --baseline-clicks 50 --baseline-impressions 800
+./run.sh rl-evaluate                       # daily; computes rewards, reinforces
+./run.sh rl-export rewards.jsonl --min-reward 0.0   # QLoRA dataset
+```
+
+Outcome sources (Google Search Console, GA4, Bing) are pluggable adapters that
+stay *unavailable* until their credentials are set, so rewards are never made
+up. Run the tests with `PYTHONPATH=src pytest tests/`.
+
 ## What's next (not in this milestone)
 
 - **Data pipeline:** live DataForSEO pulls + Playwright/CloakBrowser fallback,
-  persisting raw + parsed data to Redis/Postgres.
-- **RL feedback loop:** 30-day GSC/Analytics/Bing reward calculation.
+  persisting raw + parsed data to Redis/Postgres. (Note: no CloakBrowser module
+  exists in this repo yet — it will need to be added or pointed to.)
+- **Live RL outcome sources:** wire the GSC/GA4/Bing adapters to real APIs.
 - **Next.js dashboard:** live agent status, team chat, Kanban board, SERP
   history viewer.
-- **QLoRA fine-tuning (MLX):** SEO domain adaptation of the local model.
+- **QLoRA fine-tuning (MLX):** the training script that consumes the exported
+  dataset for SEO domain adaptation.
