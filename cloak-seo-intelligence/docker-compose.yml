@@ -1,0 +1,105 @@
+# Local infrastructure for cloak-seo-intelligence.
+#   - letta    : stateful agent runtime + ADE (http://localhost:8283)
+#   - postgres : Letta's database (agent state, memory, message history)
+#   - redis    : hot daily data + task queues
+#
+# Models are served *outside* this compose file (vMLX / MLX on the host). The
+# Letta container reaches the host endpoint via host.docker.internal — see
+# OPENAI_API_BASE in .env.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cloak-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-letta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-letta}
+      POSTGRES_DB: ${POSTGRES_DB:-letta}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cloak-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-letta}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks: [cloak-net]
+
+  redis:
+    image: redis:7-alpine
+    container_name: cloak-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - cloak-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    networks: [cloak-net]
+
+  letta:
+    image: letta/letta:latest
+    container_name: cloak-letta
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8283:8283"
+    environment:
+      # Point Letta at the Postgres service above.
+      LETTA_PG_URI: postgresql://${POSTGRES_USER:-letta}:${POSTGRES_PASSWORD:-letta}@postgres:5432/${POSTGRES_DB:-letta}
+      # Model providers. For local-first, OPENAI_API_BASE -> your vMLX endpoint.
+      OPENAI_API_BASE: ${OPENAI_API_BASE:-http://host.docker.internal:8080/v1}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-local}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Custom tools run *inside* this container, so they need to reach the
+      # other services by their compose hostnames (not localhost).
+      REDIS_URL: redis://redis:6379/0
+      DATAFORSEO_LOGIN: ${DATAFORSEO_LOGIN:-}
+      DATAFORSEO_PASSWORD: ${DATAFORSEO_PASSWORD:-}
+      CLOAK_MARKET_LOCATION_CODE: ${CLOAK_MARKET_LOCATION_CODE:-1015214}
+      CLOAK_MARKET_LANGUAGE: ${CLOAK_MARKET_LANGUAGE:-en}
+      CLOAKBROWSER_URL: ${CLOAKBROWSER_URL:-http://cloakbrowser:3000}
+      CLOAKBROWSER_PROFILE: ${CLOAKBROWSER_PROFILE:-}
+      CLOAKBROWSER_API_KEY: ${CLOAKBROWSER_API_KEY:-}
+      CLOAKBROWSER_TIMEOUT: ${CLOAKBROWSER_TIMEOUT:-60}
+    extra_hosts:
+      # Let the container reach a model server running on the host machine.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - cloak-letta-data:/root/.letta
+    restart: unless-stopped
+    networks: [cloak-net]
+
+  # CloakBrowser Manager — browser automation service with a profile dashboard.
+  # Opt-in: only starts with `docker compose --profile cloakbrowser up` so the
+  # stack runs even before you set the real image. Set CLOAKBROWSER_IMAGE in
+  # .env to your CloakBrowser Manager image, then bring it up. The dashboard is
+  # where you create the geo/mobile/anti-detect profile referenced by
+  # CLOAKBROWSER_PROFILE.
+  cloakbrowser:
+    image: ${CLOAKBROWSER_IMAGE:-cloakbrowser/manager:latest}
+    container_name: cloak-browser
+    profiles: ["cloakbrowser"]
+    ports:
+      - "${CLOAKBROWSER_PORT:-3000}:3000"
+    volumes:
+      - cloak-browser-data:/data
+    restart: unless-stopped
+    networks: [cloak-net]
+
+networks:
+  cloak-net:
+    driver: bridge
+
+volumes:
+  cloak-postgres-data:
+  cloak-redis-data:
+  cloak-letta-data:
+  cloak-browser-data:
