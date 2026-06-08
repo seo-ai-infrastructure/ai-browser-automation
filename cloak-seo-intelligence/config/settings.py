@@ -44,6 +44,22 @@ class Settings(BaseSettings):
     # ── Storage ─────────────────────────────────────────────────────────────────
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
+    # ── CloakBrowser Manager (browser automation service) ────────────────────
+    # CloakBrowser runs as its own container with a dashboard where the browsing
+    # *profile* (geo + mobile emulation, anti-detect fingerprint) is configured.
+    # The executor agent and the pipeline's scraping fallback talk to it here.
+    cloakbrowser_url: str = Field(
+        default="http://cloakbrowser:3000", alias="CLOAKBROWSER_URL"
+    )
+    cloakbrowser_profile: str | None = Field(
+        default=None, alias="CLOAKBROWSER_PROFILE",
+        description="Profile id/name configured in the CloakBrowser dashboard.",
+    )
+    cloakbrowser_api_key: str | None = Field(
+        default=None, alias="CLOAKBROWSER_API_KEY"
+    )
+    cloakbrowser_timeout: float = Field(default=60.0, alias="CLOAKBROWSER_TIMEOUT")
+
     # ── Market / deployment ──────────────────────────────────────────────────
     market_name: str = Field(default="Fort Lauderdale, FL", alias="CLOAK_MARKET_NAME")
     market_location_code: str = Field(

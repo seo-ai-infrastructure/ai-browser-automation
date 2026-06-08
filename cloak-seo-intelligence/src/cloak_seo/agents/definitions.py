@@ -83,7 +83,7 @@ AGENT_DEFINITIONS: list[AgentDefinition] = [
             "the target market every day and record what I see faithfully."
         ),
         shared_blocks=(MARKET_BLOCK, SERP_BLOCK),
-        tools=("dataforseo_pull",),
+        tools=("dataforseo_pull", "cloakbrowser_navigate"),
         tags=("worker", "researcher"),
     ),
     AgentDefinition(
@@ -105,7 +105,7 @@ AGENT_DEFINITIONS: list[AgentDefinition] = [
             "report precisely what I did."
         ),
         shared_blocks=(MARKET_BLOCK,),
-        tools=("record_seo_action",),
+        tools=("cloakbrowser_navigate", "record_seo_action"),
         tags=("worker", "executor"),
     ),
     AgentDefinition(

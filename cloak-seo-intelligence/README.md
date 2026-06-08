@@ -13,7 +13,7 @@ dashboard) plugs into.
 > | Section | Status |
 > |---|---|
 > | 1. Multi-agent system (Letta) | ✅ Done |
-> | 2. Data pipeline (DataForSEO + CloakBrowser) | 🟡 Tool interfaces stubbed, wiring next |
+> | 2. Data pipeline (DataForSEO + CloakBrowser) | 🟡 CloakBrowser integrated; DataForSEO pull next |
 > | 3. RL / 30-day feedback loop | ✅ Done (outcome sources stubbed pending creds) |
 > | 4. Shared memory & messaging | ✅ Done |
 > | 5. Next.js dashboard | ⬜ Not started |
@@ -97,8 +97,11 @@ cloak-seo-intelligence/
     ├── agents/
     │   ├── definitions.py     # Persona / role / tool config for the 6 agents
     │   └── factory.py         # Idempotent create-or-update of agents
+    ├── integrations/
+    │   └── cloakbrowser.py    # HTTP client for the CloakBrowser Manager service
     ├── tools/
     │   ├── dataforseo.py      # Custom Letta tool (interface; pipeline next)
+    │   ├── cloakbrowser.py    # cloakbrowser_navigate tool (executor/researcher)
     │   └── record_action.py   # record_seo_action tool (feeds the RL loop)
     ├── rl/                    # Reinforcement-learning feedback loop
     │   ├── models.py          # TrackedAction / ActionMetrics / RewardBreakdown
@@ -110,6 +113,29 @@ cloak-seo-intelligence/
     └── orchestration/
         └── bootstrap.py       # Wire blocks + agents together; messaging helpers
 ```
+
+## CloakBrowser integration
+
+The executor (and the researcher's scraping fallback) drive the **CloakBrowser
+Manager** service, which runs as its own container. The browsing *profile*
+(geo-targeting to the market, mobile emulation, anti-detect fingerprint) is
+created once in the CloakBrowser dashboard and referenced by id:
+
+```bash
+# In .env:
+CLOAKBROWSER_URL=http://cloakbrowser:3000
+CLOAKBROWSER_PROFILE=<the profile you created in the dashboard>
+CLOAKBROWSER_IMAGE=<your CloakBrowser Manager image>   # if running it here
+
+# Start the stack including CloakBrowser (opt-in profile):
+docker compose --profile cloakbrowser up -d
+```
+
+The HTTP contract is documented and centralized in
+`src/cloak_seo/integrations/cloakbrowser.py` — if the real API differs, that one
+module is the only thing to change. The Letta tool `cloakbrowser_navigate`
+(stdlib-only, runs on the Letta server) mirrors the same contract and returns a
+clear `not_configured` / `unreachable` status rather than fabricating results.
 
 ## Reinforcement-learning feedback loop
 

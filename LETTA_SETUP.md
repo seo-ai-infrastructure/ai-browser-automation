@@ -127,9 +127,23 @@ up. Run the tests with `PYTHONPATH=src pytest tests/`.
 
 ## What's next (not in this milestone)
 
-- **Data pipeline:** live DataForSEO pulls + Playwright/CloakBrowser fallback,
-  persisting raw + parsed data to Redis/Postgres. (Note: no CloakBrowser module
-  exists in this repo yet — it will need to be added or pointed to.)
+- **Data pipeline:** live DataForSEO pulls feeding the parsed data into
+  Redis/Postgres. (CloakBrowser is integrated — see below — as the scraping
+  fallback; the DataForSEO live pull is the remaining piece.)
+
+### CloakBrowser
+
+CloakBrowser Manager runs as its own container. Create the geo/mobile/anti-detect
+profile in its dashboard, set `CLOAKBROWSER_PROFILE` (and `CLOAKBROWSER_IMAGE`
+if running it in this stack), then:
+
+```bash
+docker compose --profile cloakbrowser up -d
+```
+
+The executor and researcher get a `cloakbrowser_navigate` tool. The HTTP contract
+lives in `src/cloak_seo/integrations/cloakbrowser.py` — adjust there if the real
+service's API differs from the documented assumption.
 - **Live RL outcome sources:** wire the GSC/GA4/Bing adapters to real APIs.
 - **Next.js dashboard:** live agent status, team chat, Kanban board, SERP
   history viewer.
